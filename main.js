@@ -48,7 +48,7 @@ app.get('/getFilesGeoProcessed', function (req, res) {
 app.get('/getFilesToProcess', function (req, res) {
     let files = []
     fs.readdirSync(uploadsFolder).forEach(file => {
-        if(file != '.gitkeep')
+        if (file != '.gitkeep')
             files.push(file);
     });
     res.json(files)
@@ -111,18 +111,31 @@ io.on('connection', function (socket) {
     console.log('a user connected');
     socket.join(socket.handshake.query.token);
     socket.on('accessProcess', function (val) {
-        console.log('accessProcess: ' + val);
+        console.log('accessProcess: ' + val.file);
         var ips = [];
         var ips_temp = [];
-        processAccessFile(fs.createReadStream(uploadsFolder + val), function (done, data) {
+        var file = fs.readFileSync(uploadsFolder + val.file);
+        var numberOfLines = file.toString().split('\n').length;
+        var aux = 1;
+        var number = 0;
+        var limit = 10;
+        var token = val.token;
+        processAccessFile(fs.createReadStream(uploadsFolder + val.file), function (done, data) {
             //console.log(data.split(' ')[0])
             if (done !== null) {
                 console.log("end")
                 //console.log(ips.length)
-                fs.writeFile(resultsFolder + val.split('.').slice(0, -1).join('.') + ".json", JSON.stringify(ips), function (err) {
-                    console.log("write to file " + resultsFolder + val.split('.').slice(0, -1).join('.') + ".json")
+                fs.writeFile(resultsFolder + val.file.split('.').slice(0, -1).join('.') + ".json", JSON.stringify(ips), function (err) {
+                    console.log("write to file " + resultsFolder + val.file.split('.').slice(0, -1).join('.') + ".json")
+                    io.to(token).emit("refreshView", "accessToGeoProcess");
                 });
             } else {
+                if (Math.floor(100 * number / numberOfLines) == limit) {
+                    io.to(token).emit("accessProcessPercentage", aux);
+                    limite = 10 * aux;
+                    aux++;
+                }
+                number++;
                 if (ips_temp.includes(data.split(' ')[0])) {
                     ips[ips_temp.indexOf(data.split(' ')[0])][3] += 1;
                     //console.log("existe")
