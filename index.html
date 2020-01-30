@@ -288,22 +288,24 @@
 
     $("#accessProcess").on('submit', (function (e) {
         e.preventDefault();
+        $("#progressProcess").css({ "width": "0%" });
         socket.emit('accessProcess', { file: $("#accessToProcess").val(), token: uid });
     }));
 
     $("#accessGeoProcess").on('submit', (function (e) {
         e.preventDefault();
+        $("#progressGeo").css({ "width": "0%" });
         socket.emit('accessGeoProcess', { token: uid, file: $("#accessToGeoProcess").val(), geoSource: $("#geoSource").val() });
     }));
-
-    socket.on('accessGeoProcessPercentage', function (msg) {
-        console.log(msg)
-        $("#progressGeo").css({ "width": msg + "%" });
-    });
 
     socket.on('accessProcessPercentage', function (msg) {
         console.log(msg)
         $("#progressProcess").css({ "width": msg + "%" });
+    });
+
+    socket.on('accessGeoProcessPercentage', function (msg) {
+        console.log(msg)
+        $("#progressGeo").css({ "width": msg + "%" });
     });
 
     socket.on('refreshView', function (msg) {
