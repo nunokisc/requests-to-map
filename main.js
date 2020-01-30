@@ -48,7 +48,8 @@ app.get('/getFilesGeoProcessed', function (req, res) {
 app.get('/getFilesToProcess', function (req, res) {
     let files = []
     fs.readdirSync(uploadsFolder).forEach(file => {
-        files.push(file);
+        if(file != '.gitkeep')
+            files.push(file);
     });
     res.json(files)
 })
